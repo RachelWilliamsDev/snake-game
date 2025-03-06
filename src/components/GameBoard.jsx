@@ -3,8 +3,9 @@ import Snake from "./Snake";
 import StartGameButton from "./StartGameButton";
 import CountdownTimer from "./CountdownTimer";
 import Food from "./Food";
+import GameOver from "./GameOver";
 
-function GameBoard({ setScore }) {
+function GameBoard({ setScore, score }) {
   const [snake, setSnake] = useState([
     { x: 5, y: 5 },
     { x: 6, y: 5 },
@@ -14,12 +15,15 @@ function GameBoard({ setScore }) {
   const [isGameStarted, setIsGameStarted] = useState(false);
   const [countdown, setCountdown] = useState(3);
   const [apple, setApple] = useState({ x: 0, y: 0 });
+  const [gameOver, setGameOver] = useState(false);
   const gridSize = 20;
 
   const startGame = () => {
     setIsGameStarted(true);
     setCountdown(3);
     setScore(0);
+    setGameOver(false);
+    setSnake([{ x: 5, y: 5 }]);
     spawnApple();
   };
 
@@ -43,7 +47,17 @@ function GameBoard({ setScore }) {
     [apple]
   );
 
+  const checkForSelfCollision = useCallback(
+    (newHead) =>
+      snake.some(
+        (segment) => segment.x === newHead.x && segment.y === newHead.y
+      ),
+    [snake]
+  );
+
   useEffect(() => {
+    if (gameOver || !isGameStarted || countdown > 0) return;
+
     const moveSnake = () => {
       setSnake((prevSnake) => {
         const newSnake = [...prevSnake];
@@ -71,6 +85,11 @@ function GameBoard({ setScore }) {
         if (newSnakeHead.x < 0) newSnakeHead.x = gridSize - 1;
         if (newSnakeHead.y >= gridSize) newSnakeHead.y = 0;
         if (newSnakeHead.y < 0) newSnakeHead.y = gridSize - 1;
+
+        if (checkForSelfCollision(newSnakeHead)) {
+          setGameOver(true);
+          return prevSnake;
+        }
 
         let updatedSnake = [newSnakeHead, ...newSnake.slice(0, -1)];
 
@@ -112,6 +131,8 @@ function GameBoard({ setScore }) {
     checkForAppleCollision,
     spawnApple,
     setScore,
+    gameOver,
+    checkForSelfCollision,
   ]);
 
   useEffect(() => {
@@ -144,8 +165,11 @@ function GameBoard({ setScore }) {
       {isGameStarted && countdown > 0 && (
         <CountdownTimer countdown={countdown} />
       )}
-      {isGameStarted && countdown === 0 && <Snake snake={snake} />}
-      {isGameStarted && countdown === 0 && <Food position={apple} />}
+      {isGameStarted && countdown === 0 && !gameOver && <Snake snake={snake} />}
+      {isGameStarted && countdown === 0 && !gameOver && (
+        <Food position={apple} />
+      )}
+      {gameOver && <GameOver score={score} startGame={startGame} />}
     </div>
   );
 }

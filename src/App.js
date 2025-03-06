@@ -20,7 +20,7 @@ function App() {
         Retro Snake
       </h1>
       <Score score={score} highScore={highScore} />
-      <GameBoard setScore={setScore} />
+      <GameBoard setScore={setScore} score={score} />
     </div>
   );
 }
