@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Snake from "./Snake";
+import StartGameButton from "./StartGameButton";
+import CountdownTimer from "./CountdownTimer";
 
 function GameBoard() {
   const [snake, setSnake] = useState([
@@ -8,7 +10,14 @@ function GameBoard() {
     { x: 7, y: 5 },
   ]);
   const [direction, setDirection] = useState("RIGHT");
+  const [isGameStarted, setIsGameStarted] = useState(false);
+  const [countdown, setCountdown] = useState(3);
   const gridSize = 20;
+
+  const startGame = () => {
+    setIsGameStarted(true);
+    setCountdown(3);
+  };
 
   useEffect(() => {
     const moveSnake = () => {
@@ -45,32 +54,38 @@ function GameBoard() {
       });
     };
 
-    const handleKeyPress = (e) => {
-      if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
-        if (direction !== "DOWN") setDirection("UP");
-      }
-      if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
-        if (direction !== "UP") setDirection("DOWN");
-      }
-      if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
-        if (direction !== "RIGHT") setDirection("LEFT");
-      }
-      if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
-        if (direction !== "LEFT") setDirection("RIGHT");
-      }
-    };
+    if (isGameStarted && countdown === 0) {
+      const handleKeyPress = (e) => {
+        if (e.key === "ArrowUp" && direction !== "DOWN") setDirection("UP");
+        if (e.key === "ArrowDown" && direction !== "UP") setDirection("DOWN");
+        if (e.key === "ArrowLeft" && direction !== "RIGHT")
+          setDirection("LEFT");
+        if (e.key === "ArrowRight" && direction !== "LEFT")
+          setDirection("RIGHT");
+      };
 
-    document.addEventListener("keydown", handleKeyPress);
+      document.addEventListener("keydown", handleKeyPress);
 
-    const interval = setInterval(() => {
-      moveSnake();
-    }, 200);
+      const interval = setInterval(() => {
+        moveSnake();
+      }, 200);
 
-    return () => {
-      clearInterval(interval);
-      document.removeEventListener("keydown", handleKeyPress);
-    };
-  }, [direction]);
+      return () => {
+        clearInterval(interval);
+        document.removeEventListener("keydown", handleKeyPress);
+      };
+    }
+  }, [direction, countdown, isGameStarted]);
+
+  useEffect(() => {
+    if (countdown > 0 && isGameStarted) {
+      const timer = setTimeout(() => {
+        setCountdown(countdown - 1);
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [countdown, isGameStarted]);
 
   return (
     <div className="relative grid grid-cols-20 grid-rows-20 gap-0 border border-blue-600">
@@ -80,7 +95,12 @@ function GameBoard() {
           className="bg-blue-200 border border-blue-600 w-4 h-4"
         ></div>
       ))}
-      <Snake snake={snake} />
+
+      {!isGameStarted && <StartGameButton onStartGame={startGame} />}
+      {isGameStarted && countdown > 0 && (
+        <CountdownTimer countdown={countdown} />
+      )}
+      {isGameStarted && countdown === 0 && <Snake snake={snake} />}
     </div>
   );
 }
