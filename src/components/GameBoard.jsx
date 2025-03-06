@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Snake from "./Snake";
 import StartGameButton from "./StartGameButton";
 import CountdownTimer from "./CountdownTimer";
@@ -22,7 +22,7 @@ function GameBoard() {
     spawnApple();
   };
 
-  const spawnApple = () => {
+  const spawnApple = useCallback(() => {
     let newApple;
     const snakePosition = snake.map((segment) => `${segment.x}, ${segment.y}`);
 
@@ -33,11 +33,14 @@ function GameBoard() {
       };
     } while (snakePosition.includes(`${newApple.x}, ${newApple.y}`));
     setApple(newApple);
-  };
+  }, [snake]);
 
-  const checkForAppleCollision = (newHead) => {
-    return newHead.x === apple.x && newHead.y === apple.y;
-  };
+  const checkForAppleCollision = useCallback(
+    (newHead) => {
+      return newHead.x === apple.x && newHead.y === apple.y;
+    },
+    [apple]
+  );
 
   useEffect(() => {
     const moveSnake = () => {
