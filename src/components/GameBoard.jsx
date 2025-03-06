@@ -4,7 +4,7 @@ import StartGameButton from "./StartGameButton";
 import CountdownTimer from "./CountdownTimer";
 import Food from "./Food";
 
-function GameBoard() {
+function GameBoard({ setScore }) {
   const [snake, setSnake] = useState([
     { x: 5, y: 5 },
     { x: 6, y: 5 },
@@ -19,6 +19,7 @@ function GameBoard() {
   const startGame = () => {
     setIsGameStarted(true);
     setCountdown(3);
+    setScore(0);
     spawnApple();
   };
 
@@ -76,6 +77,7 @@ function GameBoard() {
         if (checkForAppleCollision(newSnakeHead)) {
           updatedSnake = [newSnakeHead, ...newSnake];
           spawnApple();
+          setScore((prevScore) => prevScore + 1);
         }
 
         return updatedSnake;
@@ -103,7 +105,14 @@ function GameBoard() {
         document.removeEventListener("keydown", handleKeyPress);
       };
     }
-  }, [direction, countdown, isGameStarted, checkForAppleCollision, spawnApple]);
+  }, [
+    direction,
+    countdown,
+    isGameStarted,
+    checkForAppleCollision,
+    spawnApple,
+    setScore,
+  ]);
 
   useEffect(() => {
     if (countdown > 0 && isGameStarted) {
@@ -114,6 +123,13 @@ function GameBoard() {
       return () => clearTimeout(timer);
     }
   }, [countdown, isGameStarted]);
+
+  useEffect(() => {
+    const newSnakeHead = snake[0];
+    if (checkForAppleCollision(newSnakeHead)) {
+      setScore((prevScore) => prevScore + 1);
+    }
+  }, [snake, checkForAppleCollision, setScore]);
 
   return (
     <div className="relative grid grid-cols-20 grid-rows-20 gap-0 border border-blue-600">
