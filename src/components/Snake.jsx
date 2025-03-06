@@ -1,16 +1,25 @@
 import React from "react";
 
-export default function Snake({ snake }) {
+function Snake({ snake }) {
   return (
     <>
-      {snake.map((segment, index) => (
-        <div
-          key={index}
-          className={`w-4 h-4 bg-green-500 absolute transform translate-x-[${
-            segment.x * 100
-          }%] translate-y-[${segment.y * 100}%]`}
-        ></div>
-      ))}
+      {snake.map((segment, index) => {
+        const gridColumn = segment.x + 1;
+        const gridRow = segment.y + 1;
+
+        return (
+          <div
+            key={index}
+            className="absolute bg-green-500 w-4 h-4"
+            style={{
+              gridColumnStart: gridColumn,
+              gridRowStart: gridRow,
+            }}
+          ></div>
+        );
+      })}
     </>
   );
 }
+
+export default Snake;
